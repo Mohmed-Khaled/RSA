@@ -1,17 +1,26 @@
-#include <iostream>
+﻿#include <iostream>
 #include <string>
 #include <random>
 #include <cmath>
 #include <ctime>
+#include <list>
 
 using namespace std;
+
+#define BASE 1000000000
+#define DIGITS_PER_ELEMENT 9 // digits per array element
+#define MAX_SIZE 70
+#define MAX_VALUE (BASE - 1)
+#define LSD (MAX_SIZE - 1)
 
 class LongNumber
 {
 public:
 	LongNumber();
-	LongNumber(string n_str);
 	LongNumber(long long n);
+	LongNumber(string n_str);
+	LongNumber operator+(const LongNumber& b);
+	LongNumber operator-(const LongNumber& b);
 	LongNumber operator*(const LongNumber& b);
 	LongNumber operator/(const LongNumber& b);
 	LongNumber operator%(const LongNumber& b);
@@ -21,26 +30,30 @@ public:
 	bool operator>(const LongNumber& b);
 	bool operator<=(const LongNumber& b);
 	bool operator>=(const LongNumber& b);
-	LongNumber operator+(const LongNumber& b);
-	LongNumber operator-(const LongNumber& b);
 	LongNumber ModularExponentiation(const LongNumber& power, const LongNumber& mod);
 	LongNumber ModularInverse(const LongNumber& mod);
-	LongNumber Exponentiation(const LongNumber& power);
+	LongNumber MulExponententBase(int power);
+	LongNumber DivExponententBase(int power);
+	LongNumber ModExponententBase(int power);
 	LongNumber MulExponentent10(int power);
 	LongNumber DivExponentent10(int power);
-	LongNumber ModExponentent10(int power);
 	LongNumber Absolute();
 	bool IsPrime(int iterations);
 	bool IsEven();
 	bool IsOdd();
-	string getStringNumber();
+	string GetStringNumber();
+	int GetNumberOfDigits();
+
 private:
 	bool sign; //true means positive and false means negative
-	string number;
-	bool MillerRabinTest(LongNumber& n,LongNumber& q, int k);
-	void RemoveLeadingZeros();
-	LongNumber DivideBy2();
-	LongNumber static karatsuba(LongNumber& a,LongNumber& b);
+	unsigned long long number[MAX_SIZE];
+	int size;
+	void Insert(unsigned long long n);
+	void Append(unsigned long long n, int count);
+	bool MillerRabinTest(LongNumber& n, LongNumber& q, int k);
+	LongNumber static Karatsuba(LongNumber& a, LongNumber& b);
+	LongNumber static Divide(LongNumber& a, LongNumber& b);
+	LongNumber static Mod(LongNumber & a, LongNumber & b);
 };
 
 void test_addition_time(int n)
@@ -53,7 +66,8 @@ void test_addition_time(int n)
 		LongNumber z = x + y;
 	}
 	clock_t end = clock();
-	cout << "Addition Time = " << double(end - begin) / CLOCKS_PER_SEC << endl << endl;
+	cout << "Addition Time = " << double(end - begin) / CLOCKS_PER_SEC << endl;
+	cout << "RESULT = " << (x + y).GetStringNumber() << endl << endl;
 }
 
 void test_subtraction_time(int n)
@@ -66,20 +80,24 @@ void test_subtraction_time(int n)
 		LongNumber z = x - y;
 	}
 	clock_t end = clock();
-	cout << "Subtraction Time = " << double(end - begin) / CLOCKS_PER_SEC << endl << endl;
+	cout << "Subtraction Time = " << double(end - begin) / CLOCKS_PER_SEC << endl;
+	cout << "RESULT = " << (x - y).GetStringNumber() << endl << endl;
 }
 
 void test_multiplication_time(int n)
 {
 	LongNumber x("12369571528747655798110188786567180759626910465726920556567298659370399748072366507234899432827475865189642714067836207300153035059472237275816384410077871");
 	LongNumber y("2065420353441994803054315079370635087865508423962173447811880044936318158815802774220405304957787464676771309034463560633713497474362222775683960029689473");
+	//LongNumber x("102030405010203040050067000089010234567890");
+	//LongNumber y("12345678912345678");
 	clock_t begin = clock();
 	for (int i = 0; i < n; i++)
 	{
 		LongNumber z = x * y;
 	}
 	clock_t end = clock();
-	cout << "Multiplication Time = " << double(end - begin) / CLOCKS_PER_SEC << endl << endl;
+	cout << "Multiplication Time = " << double(end - begin) / CLOCKS_PER_SEC << endl;
+	cout << "RESULT = " << (x * y).GetStringNumber() << endl << endl;
 }
 
 void test_division_time(int n)
@@ -92,7 +110,35 @@ void test_division_time(int n)
 		LongNumber z = x / y;
 	}
 	clock_t end = clock();
-	cout << "Divisiom Time = " << double(end - begin) / CLOCKS_PER_SEC << endl << endl;
+	cout << "Division Time = " << double(end - begin) / CLOCKS_PER_SEC << endl;
+	cout << "RESULT = " << (x / y).GetStringNumber() << endl << endl;
+}
+
+void test_mod_time(int n)
+{
+	LongNumber x("613146241500251217781901182511578808656343996048865281195067222865875354435414754879740860169824341435779835004773419788215233286755223570756287073597240575020868820262738469079836284381887865043849058594244529999914407749623070473656002187994440630465017165980166916860301334175145980082772439857221824948844421903362650679826662219735503474838915729563886599030273053547440858613719791522407802156967772707196919240610998753813018909978568881709034791373718526666771136015908120183409001795657352");
+	LongNumber y("25548364798832019218170326077010425733930233389897468141147917831084690989884562791601588954296621731652139141347541240725432606132471100644835778517336041031200174441223836394229943651678525471050219216183727749114047330431603023948126844573697946795476319956787513765533596926704755530772983549787878951983");
+	clock_t begin = clock();
+	for (int i = 0; i < n; i++)
+	{
+		LongNumber z = x % y;
+	}
+	clock_t end = clock();
+	cout << "Mod Time = " << double(end - begin) / CLOCKS_PER_SEC << endl;
+	cout << "RESULT = " << (x % y).GetStringNumber() << endl << endl;
+}
+
+void test_division_time2(int n)
+{
+	LongNumber x("25548364798832019218170326077010425733930233389897468141147917831084690989884562791601588954296621731652139141347541240725432606132471100644835778517336041031200174441223836394229943651678525471050219216183727749114047330431603023948126844573697946795476319956787513765533596926704755530772983549787878951983");
+	clock_t begin = clock();
+	for (int i = 0; i < n; i++)
+	{
+		LongNumber z = x / 2;
+	}
+	clock_t end = clock();
+	cout << "Division By 2 Time = " << double(end - begin) / CLOCKS_PER_SEC << endl;
+	cout << "RESULT = " << (x / 2).GetStringNumber() << endl << endl;
 }
 
 void test_prime_check_time(string p_str, int i)
@@ -118,28 +164,30 @@ void test_modular_exponentiation_time(string m_str, string e_str, string n_str)
 		<< " and e = " << e_str
 		<< " and n = " << n_str << " : "
 		<< double(end - begin) / CLOCKS_PER_SEC << endl;
-	cout << "Result = " << r.getStringNumber() << endl << endl;
+	cout << "Result = " << r.GetStringNumber() << endl << endl;
 }
 
 string Encrypt(const string& message, const LongNumber& number, const LongNumber& mod);
 
 int main()
 {
-	// TEST START
+	/*// TEST START
 	int test_itr = 100;
 	test_addition_time(test_itr);
 	test_subtraction_time(test_itr);
 	test_multiplication_time(test_itr);
 	test_division_time(test_itr);
+	test_mod_time(test_itr);
+	test_division_time2(test_itr);
 	string m_str = "88";
 	string c_str = "4397678428390379126255360246165021910057442267382175543246817108158797115317154540746718616555865161372450860559307149988169566508274711121236049281217144195628407516579953387138808449458611836421032431582081899650685651973204503916459595600207918950383877057152533041873901965623112895996177941667469292738";
 	string e_str = "65537";
 	string d_str = "25051719899710729069339146813050963409059898810366373119834423967819636191509401691818253978210229371822961344590338934536803264841097247978074700319812702399440521918349189245279566231685265955731649745935378380489722580113725907099133943430294137060596724659637599737926649148356615085679203385772673944833";
 	string n_str = "25548364798832019218170326077010425733930233389897468141147917831084690989884562791601588954296621731652139141347541240725432606132471100644835778517336041031200174441223836394229943651678525471050219216183727749114047330431603023948126844573697946795476319956787513765533596926704755530772983549787878951983";
-	test_modular_exponentiation_time(m_str, e_str, n_str);
-	test_modular_exponentiation_time(c_str, d_str, n_str);
 	string p_str = "12369571528747655798110188786567180759626910465726920556567298659370399748072366507234899432827475865189642714067836207300153035059472237275816384410077871";
 	string q_str = "2065420353441994803054315079370635087865508423962173447811880044936318158815802774220405304957787464676771309034463560633713497474362222775683960029689473";
+	test_modular_exponentiation_time(m_str, e_str, n_str);
+	test_modular_exponentiation_time(c_str, d_str, n_str);
 	test_prime_check_time(p_str, 1);
 	test_prime_check_time(q_str, 1);
 	// TEST END*/
@@ -163,7 +211,7 @@ int main()
 	LongNumber E(E_str);
 	LongNumber D = E.ModularInverse(PhiN);
 	string operation;
-	while(getline(cin,operation))
+	while (getline(cin, operation))
 	{
 		if (operation == "Quit") break;
 		if (operation == "IsPPrime")
@@ -178,15 +226,15 @@ int main()
 		}
 		else if (operation == "PrintN")
 		{
-			cout << N.getStringNumber() << endl;
+			cout << N.GetStringNumber() << endl;
 		}
 		else if (operation == "PrintPhi")
 		{
-			cout << PhiN.getStringNumber() << endl;
+			cout << PhiN.GetStringNumber() << endl;
 		}
 		else if (operation == "PrintD")
 		{
-			cout << D.getStringNumber() << endl;
+			cout << D.GetStringNumber() << endl;
 		}
 		else if (operation.substr(0, 13) == "EncryptPublic")
 		{
@@ -208,204 +256,307 @@ string Encrypt(const string& message, const LongNumber& number, const LongNumber
 {
 	LongNumber msg(message);
 	msg = msg.ModularExponentiation(number, mod); //encryption
-	return msg.getStringNumber();
+	return msg.GetStringNumber();
 }
 
 LongNumber::LongNumber()
 {
 	sign = true; //default is positive
-	number = "0";
-}
-
-LongNumber::LongNumber(string n_str)
-{
-	if(n_str[n_str.size() - 1] == '-')
-	{
-		sign = false;
-		number = n_str.substr(1);
-	}
-	else
-	{
-		sign = true;
-		number = n_str;
-	}
-	RemoveLeadingZeros();
+	size = 1;
+	number[LSD] = 0;
 }
 
 LongNumber::LongNumber(long long n)
 {
-	if (n < 0)
+	sign = n >= 0;
+	if (n <= MAX_VALUE)
 	{
-		sign = false;
-		number = to_string(n).substr(1);
+		size = 1;
+		number[LSD] = abs(n);
+	}
+	else if(n <= 999999999999999999)
+	{
+		size = 2;
+		number[LSD - 1] = abs(n) / BASE;
+		number[LSD] = abs(n) - number[LSD - 1] * BASE;
 	}
 	else
 	{
-		sign = true;
-		number = to_string(n);
+		size = 3;
+		number[LSD - 2] = (abs(n) / BASE) / BASE;
+		number[LSD - 1] = (abs(n) - number[LSD - 2] * BASE * BASE) / BASE;
+		number[LSD] = abs(n) - number[LSD - 1] * BASE;
 	}
-	RemoveLeadingZeros();
+}
+
+LongNumber::LongNumber(string n_str)
+{
+	sign = n_str[0] != '-';
+	if (!sign)
+		n_str = n_str.substr(1);
+	n_str.erase(0, n_str.find_first_not_of('0'));
+	if (n_str.length() == 0)
+	{
+		size = 1;
+		number[LSD] = 0;
+	}
+	else
+	{
+		size = (int)ceil(n_str.length() / (float)DIGITS_PER_ELEMENT);
+		if (n_str.length() % DIGITS_PER_ELEMENT != 0)
+		{
+			number[MAX_SIZE - size] = stoull(n_str.substr(0, n_str.length() % DIGITS_PER_ELEMENT));
+		}
+		int start = (int) n_str.length() - DIGITS_PER_ELEMENT;
+		for (int i = LSD; i >= MAX_SIZE - size; i--)
+		{
+			if (start < 0)
+				break;
+			number[i] = stoull(n_str.substr(start, DIGITS_PER_ELEMENT));
+			start -= DIGITS_PER_ELEMENT;
+		}
+	}
+}
+
+void LongNumber::Insert(unsigned long long n)
+{
+	size++;
+	number[MAX_SIZE - size] = n;
+}
+
+void LongNumber::Append(unsigned long long n,int count)
+{
+	if (count <= 0)
+		return;
+	size += count;
+	if (size > MAX_SIZE)
+		size = MAX_SIZE;
+	int i = MAX_SIZE - size;
+	for (;i < MAX_SIZE - count;i++)
+	{
+		number[i] = number[i + count];
+	}
+	for (;i < MAX_SIZE; i++)
+	{
+		number[i] = n;
+	}
 }
 
 LongNumber LongNumber::operator*(const LongNumber & b)
 {
-	//TODO: Try to enhance Muyliplication.
-	if (number == "0" || b.number == "0")
+	if ((size == 1 && number[LSD] == 0) || (b.size == 1 && b.number[LSD] == 0))
 	{
-		return LongNumber(0);
+		return LongNumber();
 	}
-	if (number == "1")
+	if ((size == 1 && number[LSD] == 1))
 	{
 		return b;
 	}
-	if (b.number == "1")
+	if ((b.size == 1 && b.number[LSD] == 1))
 	{
 		return *this;
 	}
 	LongNumber mul;
-	if (number.size() < 10 && b.number.size() < 10)
+	if (size == 1 && b.size == 1)
 	{
-		mul = stoll(number) * stoll(b.number);
+		mul = number[LSD] * b.number[LSD];
 	}
-	else if(number.size() < 80 || b.number.size() < 80)
+	else if (true)//size < 10 || b.size < 10)
 	{
-		string n1 = number;
-		string n2 = b.number;
-		if (n1.length() > n2.length())
-			n1.swap(n2); //to decrease calls to add operation
-		for (int i = n1.size() - 1; i >= 0; i--)
+		if (size < b.size)
 		{
-			string tmp = n2;
-			unsigned int d1 = n1[i] - '0';
-			unsigned int c = 0; //carry
-			for (int j = tmp.size() - 1; j >= 0; j--)
+			for (int i = LSD; i >= MAX_SIZE - size; i--)
 			{
-				unsigned int d2 = tmp[j] - '0';
-				d2 = d1 * d2 + c;
-				if (d2 > 9)
+				LongNumber tmp = b;
+				unsigned long long d1 = number[i];
+				unsigned long long c = 0; //carry
+				for (int j = LSD; j >= MAX_SIZE - tmp.size; j--)
 				{
-					c = d2 / 10;
-					d2 -= c * 10;
+					unsigned long long d2 = tmp.number[j] * d1 + c;
+					if (d2 > MAX_VALUE)
+					{
+						c = d2 / BASE;
+						d2 -= c * BASE;
+					}
+					else
+						c = 0;
+					tmp.number[j] = d2;
 				}
-				else
-					c = 0;
-				tmp[j] = d2 + '0';
+				if (c > 0)
+					tmp.Insert(c);
+				tmp = tmp.MulExponententBase(LSD - i);//result of multiplication with tens, hundreds,...
+				mul = mul + tmp;
 			}
-			if (c > 0)
-				tmp.insert(0, 1, c + '0');
-			tmp.append(n1.size() - 1 - i, '0');//result of multiplication with tens, hundreds,...
-			mul = mul + tmp;
+		}
+		else
+		{
+			for (int i = LSD; i >= MAX_SIZE - b.size; i--)
+			{
+				LongNumber tmp = *this;
+				unsigned long long d1 = b.number[i];
+				unsigned long long c = 0; //carry
+				for (int j = LSD; j >= MAX_SIZE - tmp.size; j--)
+				{
+					unsigned long long d2 = tmp.number[j] * d1 + c;
+					if (d2 > MAX_VALUE)
+					{
+						c = d2 / BASE;
+						d2 -= c * BASE;
+					}
+					else
+						c = 0;
+					tmp.number[j] = d2;
+				}
+				if (c > 0)
+					tmp.Insert(c);
+				tmp = tmp.MulExponententBase(LSD - i);//result of multiplication with tens, hundreds,...
+				mul = mul + tmp;
+			}
 		}
 	}
 	else
 	{
 		LongNumber op1 = *this;
 		LongNumber op2 = b;
-		mul = karatsuba(op1, op2);
+		mul = Karatsuba(op1, op2);
 	}
-	RemoveLeadingZeros();
 	mul.sign = !(sign ^ b.sign);
 	return mul;
 }
 
 LongNumber LongNumber::operator/(const LongNumber & b)
 {
-	//TODO: Try to enhance Division.
-	if (number == "0" || (*this < b))
+	// TODO: MUST ENHANCE DIVISION.
+	if ((size == 1 && number[LSD] == 0) || (*this < b))
 		return LongNumber();
-	if (b.number == "1")
+	if ((b.size == 1 && b.number[LSD] == 1))
 	{
 		LongNumber tmp = *this;
 		tmp.sign = !(sign ^ b.sign);
 		return tmp;
 	}
-	if (b.number == "2")
+	if (size == 1 && b.size == 1)
 	{
-		LongNumber tmp = (*this).DivideBy2();
+		LongNumber tmp(number[LSD] / b.number[LSD]);
 		tmp.sign = !(sign ^ b.sign);
 		return tmp;
 	}
-	if (*this == b)
-		return LongNumber(1);
+	if (b.size == 1)
+	{
+		unsigned long long divisor = b.number[LSD];
+		unsigned long long rem = 0;
+		LongNumber div;
+		div.size = size;
+		for (int i = MAX_SIZE - size; i < MAX_SIZE; i++)
+		{
+			rem = (rem * BASE) + number[i];
+			div.number[i] = rem / divisor;
+			rem %= divisor;
+		}
+		div.sign = !(sign ^ b.sign);
+		for (int i = MAX_SIZE - size; i < MAX_SIZE; i++)
+		{
+			if (div.number[i] == 0)
+				div.size--;
+			else
+				break;
+		}
+		return div.size != 0 ? div : 0;
+	}
+	LongNumber A = *this;
+	LongNumber B = b;
+	if (A.Absolute() == B.Absolute())
+	{
+		LongNumber tmp(1);
+		tmp.sign = !(sign ^ b.sign);
+		return tmp;
+	}
+	if (false)//B.number[MAX_SIZE - B.size] > BASE / 2)
+	{
+		if (A.size == B.size + 1)
+		{
+			LongNumber tmp = Divide(A, B);
+			tmp.sign = !(sign ^ b.sign);
+			return tmp;
+		}
+	}
 	LongNumber quotient;
 	bool quotientSign = !(sign ^ b.sign);
-	LongNumber dividend = *this;
-	LongNumber nx1 = b;
-	LongNumber nx2 = (LongNumber(nx1) * 2).getStringNumber();
-	LongNumber nx4 = (LongNumber(nx2) * 2).getStringNumber();
-	LongNumber nx8 = (LongNumber(nx4) * 2).getStringNumber();
-	while(dividend.Absolute() >= nx1.Absolute())
+	LongNumber nx1 = B;
+	LongNumber nx2 = LongNumber(nx1) * 2;
+	LongNumber nx4 = LongNumber(nx2) * 2;
+	LongNumber nx8 = LongNumber(nx4) * 2;
+	while (A.Absolute() >= nx1.Absolute())
 	{
-		if (dividend.Absolute() >= nx8.Absolute())
+		if (A.Absolute() >= nx8.Absolute())
 		{
-			string q = "8";
+			LongNumber q(8);
 			LongNumber tmp = nx8;
-			q.append(dividend.number.size() - tmp.number.size(), '0');
-			tmp.number.append(dividend.number.size() - tmp.number.size(), '0');
-			if (dividend.Absolute() < tmp.Absolute())
+			q = q.MulExponentent10(A.GetNumberOfDigits() - tmp.GetNumberOfDigits());
+			tmp = tmp.MulExponentent10(A.GetNumberOfDigits() - tmp.GetNumberOfDigits());
+			if (A.Absolute() < tmp.Absolute())
 			{
-				q = q.substr(0, q.size() - 1);
-				tmp.number = tmp.number.substr(0, tmp.number.size() - 1);
+				q = q.DivExponentent10(1);
+				tmp = tmp.DivExponentent10(1);
 			}
-			if(quotientSign)
-				dividend = dividend - tmp;
+			if (quotientSign)
+				A = A - tmp;
 			else
-				dividend = dividend + tmp;
+				A = A + tmp;
 			quotient = quotient + q;
 		}
-		else if (dividend.Absolute() >= nx4.Absolute())
+		if (A.Absolute() >= nx4.Absolute())
 		{
-			string q = "4";
+			LongNumber q(4);
 			LongNumber tmp = nx4;
-			q.append(dividend.number.size() - tmp.number.size(), '0');
-			tmp.number.append(dividend.number.size() - tmp.number.size(), '0');
-			if (dividend.Absolute() < tmp.Absolute())
+			q = q.MulExponentent10(A.GetNumberOfDigits() - tmp.GetNumberOfDigits());
+			tmp = tmp.MulExponentent10(A.GetNumberOfDigits() - tmp.GetNumberOfDigits());
+			if (A.Absolute() < tmp.Absolute())
 			{
-				q = q.substr(0, q.size() - 1);
-				tmp.number = tmp.number.substr(0, tmp.number.size() - 1);
+				q = q.DivExponentent10(1);
+				tmp = tmp.DivExponentent10(1);
 			}
 			if (quotientSign)
-				dividend = dividend - tmp;
+				A = A - tmp;
 			else
-				dividend = dividend + tmp;
+				A = A + tmp;
 			quotient = quotient + q;
 		}
-		else if (dividend.Absolute() >= nx2.Absolute())
+		if (A.Absolute() >= nx2.Absolute())
 		{
-			string q = "2";
+			LongNumber q(2);
 			LongNumber tmp = nx2;
-			q.append(dividend.number.size() - tmp.number.size(), '0');
-			tmp.number.append(dividend.number.size() - tmp.number.size(), '0');
-			if (dividend.Absolute() < tmp.Absolute())
+			q = q.MulExponentent10(A.GetNumberOfDigits() - tmp.GetNumberOfDigits());
+			tmp = tmp.MulExponentent10(A.GetNumberOfDigits() - tmp.GetNumberOfDigits());
+			if (A.Absolute() < tmp.Absolute())
 			{
-				q = q.substr(0, q.size() - 1);
-				tmp.number = tmp.number.substr(0, tmp.number.size() - 1);
+				q = q.DivExponentent10(1);
+				tmp = tmp.DivExponentent10(1);
 			}
 			if (quotientSign)
-				dividend = dividend - tmp;
+				A = A - tmp;
 			else
-				dividend = dividend + tmp;
+				A = A + tmp;
 			quotient = quotient + q;
 		}
-		else if (dividend.Absolute() >= nx1.Absolute())
+		if (A.Absolute() >= nx1.Absolute())
 		{
-			string q = "1";
+			LongNumber q(1);
 			LongNumber tmp = nx1;
-			q.append(dividend.number.size() - tmp.number.size(), '0');
-			tmp.number.append(dividend.number.size() - tmp.number.size(), '0');
-			if (dividend.Absolute() < tmp.Absolute())
+			q = q.MulExponentent10(A.GetNumberOfDigits() - tmp.GetNumberOfDigits());
+			tmp = tmp.MulExponentent10(A.GetNumberOfDigits() - tmp.GetNumberOfDigits());
+			if (A.Absolute() < tmp.Absolute())
 			{
-				q = q.substr(0, q.size() - 1);
-				tmp.number = tmp.number.substr(0, tmp.number.size() - 1);
+				q = q.DivExponentent10(1);
+				tmp = tmp.DivExponentent10(1);
 			}
 			if (quotientSign)
-				dividend = dividend - tmp;
+				A = A - tmp;
 			else
-				dividend = dividend + tmp;
+				A = A + tmp;
 			quotient = quotient + q;
 		}
 	}
-	RemoveLeadingZeros();
 	quotient.sign = quotientSign;
 	return quotient;
 }
@@ -413,84 +564,95 @@ LongNumber LongNumber::operator/(const LongNumber & b)
 LongNumber LongNumber::operator%(const LongNumber & b)
 {
 	// not tested with negative numbers as it is not needed in RSA
-	if (number == "0" || *this == b)
+	if ((size == 1 && number[LSD] == 0) || *this == b)
 		return LongNumber();
-	if (b.number == "1")
+	if ((b.size == 1 && b.number[LSD] == 1))
 		return LongNumber();
-	if (b.number == "2")
+	if ((b.size == 1 && b.number[LSD] == 2))
 	{
 		return IsEven() ? LongNumber() : LongNumber(1);
 	}
 	if (*this < b)
 		return *this;
-	LongNumber dividend = *this;
-	bool quotientSign = !(sign ^ b.sign);
-	LongNumber nx1 = b;
-	LongNumber nx2 = (LongNumber(nx1) * 2).getStringNumber();
-	LongNumber nx4 = (LongNumber(nx2) * 2).getStringNumber();
-	LongNumber nx8 = (LongNumber(nx4) * 2).getStringNumber();
-	while (dividend.Absolute() >= nx1.Absolute())
+	if (size == 1 && b.size == 1)
 	{
-		if (dividend.Absolute() >= nx8.Absolute())
+		return LongNumber(number[LSD] % b.number[LSD]);
+	}
+	if (b.size == 1)
+	{
+		unsigned long long divisor = b.number[LSD];
+		unsigned long long rem = 0;
+		for (int i = MAX_SIZE - size; i < MAX_SIZE; i++)
+		{
+			rem = (rem * BASE) + number[i];
+			rem %= divisor;
+		}
+		return rem;
+	}
+	LongNumber A = *this;
+	bool quotientSign = !(sign ^ b.sign);
+	A.sign = true;
+	LongNumber nx1 = b;
+	nx1.sign = true;
+	LongNumber nx2 = nx1 * 2;
+	LongNumber nx4 = nx2 * 2;
+	LongNumber nx8 = nx4 * 2;
+	while (A >= nx1)
+	{
+		if (A >= nx8)
 		{
 			LongNumber tmp = nx8;
-			tmp.number.append(dividend.number.size() - tmp.number.size(), '0');
-			if (dividend.Absolute() < tmp.Absolute())
+			tmp = tmp.MulExponentent10(A.GetNumberOfDigits() - tmp.GetNumberOfDigits());
+			if (A < tmp)
 			{
-				tmp.number = tmp.number.substr(0, tmp.number.size() - 1);
+				tmp = tmp.DivExponentent10(1);
 			}
-			if (quotientSign)
-				dividend = dividend - tmp;
-			else
-				dividend = dividend + tmp;
+			A = A - tmp;
 		}
-		else if (dividend.Absolute() >= nx4.Absolute())
+		if (A >= nx4)
 		{
 			LongNumber tmp = nx4;
-			tmp.number.append(dividend.number.size() - tmp.number.size(), '0');
-			if (dividend.Absolute() < tmp.Absolute())
+			tmp = tmp.MulExponentent10(A.GetNumberOfDigits() - tmp.GetNumberOfDigits());
+			if (A < tmp)
 			{
-				tmp.number = tmp.number.substr(0, tmp.number.size() - 1);
+				tmp = tmp.DivExponentent10(1);
 			}
-			if (quotientSign)
-				dividend = dividend - tmp;
-			else
-				dividend = dividend + tmp;
+			A = A - tmp;
 		}
-		else if (dividend.Absolute() >= nx2.Absolute())
+		if (A >= nx2)
 		{
 			LongNumber tmp = nx2;
-			tmp.number.append(dividend.number.size() - tmp.number.size(), '0');
-			if (dividend.Absolute() < tmp.Absolute())
+			tmp = tmp.MulExponentent10(A.GetNumberOfDigits() - tmp.GetNumberOfDigits());
+			if (A < tmp)
 			{
-				tmp.number = tmp.number.substr(0, tmp.number.size() - 1);
+				tmp = tmp.DivExponentent10(1);
 			}
-			if (quotientSign)
-				dividend = dividend - tmp;
-			else
-				dividend = dividend + tmp;
+			A = A - tmp;
 		}
-		else if (dividend.Absolute() >= nx1.Absolute())
+		if (A >= nx1)
 		{
 			LongNumber tmp = nx1;
-			tmp.number.append(dividend.number.size() - tmp.number.size(), '0');
-			if (dividend.Absolute() < tmp.Absolute())
+			tmp = tmp.MulExponentent10(A.GetNumberOfDigits() - tmp.GetNumberOfDigits());
+			if (A < tmp)
 			{
-				tmp.number = tmp.number.substr(0, tmp.number.size() - 1);
+				tmp = tmp.DivExponentent10(1);
 			}
-			if (quotientSign)
-				dividend = dividend - tmp;
-			else
-				dividend = dividend + tmp;
+			A = A - tmp;
 		}
 	}
-	RemoveLeadingZeros();
-	return dividend;
+	return A;
 }
 
 bool LongNumber::operator==(const LongNumber& b)
 {
-	return number == b.number && sign == b.sign;
+	if (size != b.size)
+		return false;
+	for(int i = MAX_SIZE - size;i < MAX_SIZE;i++)
+	{
+		if (number[i] != b.number[i])
+			return false;
+	}
+	return true;
 }
 
 bool LongNumber::operator!=(const LongNumber & b)
@@ -500,27 +662,37 @@ bool LongNumber::operator!=(const LongNumber & b)
 
 bool LongNumber::operator<(const LongNumber & b)
 {
-	if (!sign && !b.sign) 
+	if (size < b.size)
+		return true;
+	if (size > b.size)
+		return false;
+	if (*this == b)
+		return false;
+	if (!sign && !b.sign)
 	{
-		if (number.length() > b.number.length())
-			return true;
-		if (number.length() < b.number.length())
-			return false;
-		return number > b.number;
+		for (int i = MAX_SIZE - size; i < MAX_SIZE; i++)
+		{
+			if (number[i] < b.number[i])
+				return false;
+			if (number[i] > b.number[i])
+				break;
+		}
 	}
 	if (sign && !b.sign)
 		return false;
 	if (!sign && b.sign)
 		return true;
-	if (sign && b.sign) 
+	if (sign && b.sign)
 	{
-		if (number.length() < b.number.length())
-			return true;
-		if (number.length() > b.number.length())
-			return false;
-		return number < b.number;
+		for (int i = MAX_SIZE - size; i < MAX_SIZE; i++)
+		{
+			if (number[i] > b.number[i])
+				return false;
+			if (number[i] < b.number[i])
+				break;
+		}
 	}
-	return false;
+	return true;
 }
 
 bool LongNumber::operator>(const LongNumber & b)
@@ -541,11 +713,11 @@ bool LongNumber::operator>=(const LongNumber & b)
 
 LongNumber LongNumber::operator+(const LongNumber & b)
 {
-	if (number == "0")
+	if ((size == 1 && number[LSD] == 0))
 		return b;
-	if (b.number == "0")
+	if ((b.size == 1 && b.number[LSD] == 0))
 		return *this;
-	if(sign && !b.sign)
+	if (sign && !b.sign)
 	{
 		LongNumber tmp = b;
 		tmp.sign = true;
@@ -562,48 +734,85 @@ LongNumber LongNumber::operator+(const LongNumber & b)
 	if (sign && b.sign)
 		addSign = true;
 	else
-		addSign = false; 
-	string n1 = number;
-	string n2 = b.number;
-	string add = (n1.length() > n2.length()) ? n1 : n2;
-	add.insert(0, 1, '0');
-	int padding = abs((int)(n1.size() - n2.size()));
-	if (n1.size() > n2.size())
+		addSign = false;
+	LongNumber add;
+	add.sign = addSign;
+	unsigned long long sum = 0;
+	unsigned long long carry = 0;
+	if (size > b.size)
 	{
-		n1.insert(0, 1, '0');
-		n2.insert(0, padding + 1, '0');
-	}
-	else if (n1.size() < n2.size())
-	{
-		n1.insert(0, padding + 1, '0');
-		n2.insert(0, 1, '0');
+		add.size = size;
+		int op1Index = MAX_SIZE;
+		int op2Index = MAX_SIZE;
+		while (op2Index > MAX_SIZE - b.size)
+		{
+			sum = number[--op1Index] + b.number[--op2Index] + carry;
+			if (sum > MAX_VALUE)
+			{
+				sum -= BASE;
+				carry = 1;
+			}
+			else
+				carry = 0;
+			add.number[op1Index] = sum;
+		}
+		while (op1Index > MAX_SIZE - size)
+		{
+			sum = number[--op1Index] + carry;
+			if (sum > MAX_VALUE)
+			{
+				sum -= BASE;
+				carry = 1;
+			}
+			else
+				carry = 0;
+			add.number[op1Index] = sum;
+		}
 	}
 	else
 	{
-		n1.insert(0, 1, '0');
-		n2.insert(0, 1, '0');
-	}
-	for (int i = add.size() - 1; i >= 0; i--)
-	{
-		add[i] = ((n1[i] - '0') + (n2[i] - '0')) + '0';
-		while (add[i] > '9')
+		add.size = b.size;
+		int op1Index = MAX_SIZE;
+		int op2Index = MAX_SIZE;
+		while (op2Index > MAX_SIZE - size)
 		{
-			add[i] -= 10;
-			n1[i - 1]++;
+			sum = b.number[--op1Index] + number[--op2Index] + carry;
+			if (sum > MAX_VALUE)
+			{
+				sum -= BASE;
+				carry = 1;
+			}
+			else
+				carry = 0;
+			add.number[op1Index] = sum;
+		}
+		while (op1Index > MAX_SIZE - b.size)
+		{
+			sum = b.number[--op1Index] + carry;
+			if (sum > MAX_VALUE)
+			{
+				sum -= BASE;
+				carry = 1;
+			}
+			else
+				carry = 0;
+			add.number[op1Index] = sum;
 		}
 	}
-	LongNumber addResult(add);
-	addResult.sign = addSign;
-	return addResult;
+	if (carry == 1)
+	{
+		add.Insert(1);
+	}
+	return add;
 }
 
 LongNumber LongNumber::operator-(const LongNumber & b)
 {
-	if(b.number == "0")
+	if ((b.size == 1 && b.number[LSD] == 0))
 	{
 		return *this;
 	}
-	if (number == "0")
+	if ((size == 1 && number[LSD] == 0))
 	{
 		LongNumber tmp = b;
 		tmp.sign = !sign;
@@ -621,51 +830,59 @@ LongNumber LongNumber::operator-(const LongNumber & b)
 		tmp.sign = false;
 		return *this + tmp;
 	}
-	bool subSign;	
+	bool subSign;
 	if (*this > b)
 		subSign = true;
 	else
 		subSign = false;
-	string n1 = number;
-	string n2 = b.number;
-	string sub = (n1.length() > n2.length()) ? n1 : n2;
-	int padding = abs((int) (n1.size() - n2.size()));
-	if (n1.size() > n2.size())
-		n2.insert(0, padding, '0');
-	else
-		n1.insert(0, padding, '0');
-	for(int i = sub.size() - 1;i >= 0;i--)
+	LongNumber op1 = *this;
+	LongNumber sub;
+	sub.size = size;
+	sub.sign = true;
+	int op1Index = MAX_SIZE;
+	int op2Index = MAX_SIZE;
+	while (op2Index > MAX_SIZE - b.size)
 	{
-		if (n1[i] < n2[i])
+		if(op1.number[--op1Index] < b.number[--op2Index])
 		{
-			n1[i] += 10;
-			if(i != 0)
-				n1[i - 1]--;
+			sub.number[op1Index] = BASE + op1.number[op1Index] - b.number[op2Index];
+			if (op1Index != MAX_SIZE - op1.size)
+				op1.number[op1Index - 1]--;
 		}
-		sub[i] = ((n1[i] - '0') - (n2[i] - '0')) + '0';
+		else
+			sub.number[op1Index] = op1.number[op1Index] - b.number[op2Index];
 	}
-	LongNumber subResult(sub);
-	subResult.sign = subSign;
-	return subResult;
+	while (op1Index > MAX_SIZE - size)
+	{
+		--op1Index;
+		sub.number[op1Index] = op1.number[op1Index];
+	}
+	for(int i = MAX_SIZE - size;i < MAX_SIZE;i++)
+	{
+		if (sub.number[i] == 0)
+			sub.size--;
+		else
+			break;
+	}
+	return sub.size != 0 ? sub : 0;
 }
 
 LongNumber LongNumber::ModularExponentiation(const LongNumber & power, const LongNumber & mod)
 {
-	//TODO: Try to enhance ModularExponentiation. 
-	if (mod.number == "1")
+	if ((mod.size == 1 && mod.number[LSD] == 1))
 		return LongNumber();
 	LongNumber base = *this;
 	base = base % mod;
 	LongNumber p = power;
-	if (p == 1) {
+	if ((p.size == 1 && p.number[LSD] == 1)) {
 		return base;
 	}
-	if (p == 0) {
+	if ((p.size == 1 && p.number[LSD] == 0)) {
 		return LongNumber(1);
 	}
-	if(p.number.size() > 300)
+	if (true)//p.size > 10)
 	{
-		LongNumber result = 1;
+		LongNumber result(1);
 		while (p > 0)
 		{
 			if (p.IsOdd())
@@ -673,7 +890,6 @@ LongNumber LongNumber::ModularExponentiation(const LongNumber & power, const Lon
 			p = p / 2;
 			base = (base * base) % mod;
 		}
-		RemoveLeadingZeros();
 		return result;
 	}
 	else
@@ -684,13 +900,14 @@ LongNumber LongNumber::ModularExponentiation(const LongNumber & power, const Lon
 		{
 			res = LongNumber(1);
 		}
-		else 
+		else
 		{
 			res = base;
 		}
-		LongNumber x = m * m;
+		LongNumber x = (m * m) % mod;
 		return (x * res) % mod;
 	}
+	return 1;
 }
 
 LongNumber LongNumber::ModularInverse(const LongNumber & mod)
@@ -706,7 +923,6 @@ LongNumber LongNumber::ModularInverse(const LongNumber & mod)
 		}
 		if (B3 == 1)
 		{
-			B2.RemoveLeadingZeros();
 			if (!B2.sign)
 				B2 = B2 + mod;
 			return B2;
@@ -725,113 +941,166 @@ LongNumber LongNumber::ModularInverse(const LongNumber & mod)
 	return LongNumber();
 }
 
-LongNumber LongNumber::Exponentiation(const LongNumber & power)
+LongNumber LongNumber::MulExponententBase(int power)
 {
-	LongNumber base = *this;
-	LongNumber p = power;
-	LongNumber result = 1;
-	if (p == 1) {
-		return base;
-	}
-	if (p == 0) {
-		return LongNumber(1);
-	}
-	LongNumber m = base.Exponentiation(p / 2);
-	LongNumber res;
-	if (p.IsEven())
+	LongNumber tmp = *this;
+	if (power > MAX_SIZE)
+		power = MAX_SIZE;
+	if (power < 0)
+		power = 0;
+	tmp.Append(0, power);
+	return tmp;
+}
+
+LongNumber LongNumber::DivExponententBase(int power)
+{
+	if (power > MAX_SIZE)
+		power = MAX_SIZE;
+	if (power < 0)
+		power = 0;
+	if (size <= power)
+		return LongNumber();
+	LongNumber tmp = *this;
+	for (int i = LSD; i >= MAX_SIZE - size; i--)
 	{
-		res = LongNumber(1);
+		if (i - power < 0)
+			break;
+		tmp.number[i] = number[i-power];
 	}
-	else {
-		res = base;
+	tmp.size -= power;
+	for (int i = MAX_SIZE - size; i < MAX_SIZE; i++)
+	{
+		if (tmp.number[i] == 0)
+			tmp.size--;
+		else
+			break;
 	}
-	LongNumber x = m * m;
-	x = x * res;
-	RemoveLeadingZeros();
-	return x;
+	return tmp.size != 0 ? tmp : 0;
+}
+
+LongNumber LongNumber::ModExponententBase(int power)
+{
+	if (power > MAX_SIZE || power < 0)
+		power = MAX_SIZE;
+	if (size <= power)
+		return *this;
+	LongNumber tmp = *this;
+	tmp.size = power;
+	return tmp;
 }
 
 LongNumber LongNumber::MulExponentent10(int power)
 {
-	LongNumber tmp = *this;
-	tmp.number.append(power,'0');
-	return tmp;
+	int p1 = power / 9;
+	int p2 = power % 9;
+	LongNumber tmp = (*this).MulExponententBase(p1);
+	return tmp * (unsigned long long) pow(10,p2);
 }
 
 LongNumber LongNumber::DivExponentent10(int power)
 {
-	LongNumber tmp = *this;
-	int pos = tmp.number.size() - power;
-	if (pos <= 0)
-		return LongNumber(0);
-	tmp.number = tmp.number.substr(0, tmp.number.size() - power);
-	return tmp;
-}
-
-LongNumber LongNumber::ModExponentent10(int power)
-{
-	LongNumber tmp = *this;
-	int pos = tmp.number.size() - power;
-	if (pos < 0)
-		return tmp;
-	tmp.number = tmp.number.substr(tmp.number.size() - power);
-	return tmp;
+	int p1 = power / 9;
+	int p2 = power % 9;
+	LongNumber tmp = (*this).MulExponententBase(p1);
+	return tmp / (unsigned long long) pow(10, p2);
 }
 
 LongNumber LongNumber::Absolute()
 {
-	return LongNumber(number);
-}
-
-LongNumber LongNumber::DivideBy2()
-{
 	LongNumber tmp = *this;
-	tmp = tmp * 5;
-	tmp = tmp.DivExponentent10(1);
+	tmp.sign = true;
 	return tmp;
 }
 
-LongNumber LongNumber::karatsuba(LongNumber & a, LongNumber & b)
+LongNumber LongNumber::Karatsuba(LongNumber & a, LongNumber & b)
 {
-	if (a.number == "0" || b.number == "0")
+	// there is a bug here.
+	if ((a.size == 1 && a.number[LSD] == 0) || (b.size == 1 && b.number[LSD] == 0))
 	{
-		return LongNumber(0);
+		return LongNumber();
 	}
-	if (a.number == "1")
+	if ((a.size == 1 && a.number[LSD] == 1))
 	{
 		return b;
 	}
-	if (b.number == "1")
+	if ((b.size == 1 && b.number[LSD] == 1))
 	{
 		return a;
 	}
-	int m = (a.number.size() > b.number.size()) ? a.number.size() : b.number.size();
-	if (m < 10)
+	int m = (a.size > b.size) ? (int) a.size : (int) b.size;
+	if (m == 1)
 	{
-		return stoll(a.number) * stoll(b.number);
+		return a.number[LSD] * b.number[LSD];
 	}
 	m = (m / 2) + (m % 2);
-	LongNumber x1 = a.DivExponentent10(m);
-	LongNumber x0 = a.ModExponentent10(m);
-	LongNumber y1 = b.DivExponentent10(m);
-	LongNumber y0 = b.ModExponentent10(m);
-	LongNumber u = karatsuba(x1, y1);
-	LongNumber v = karatsuba(x0, y0);
-	LongNumber w = (karatsuba((x1 + x0), (y1 + y0)) - u) - v;
-	return u.MulExponentent10(2*m) + w.MulExponentent10(m) + v;
+	LongNumber x1 = a.DivExponententBase(m);
+	LongNumber x0 = a.ModExponententBase(m);
+	LongNumber y1 = b.DivExponententBase(m);
+	LongNumber y0 = b.ModExponententBase(m);
+	LongNumber u = Karatsuba(x1, y1);
+	LongNumber v = Karatsuba(x0, y0);
+	LongNumber w = (Karatsuba((x1 + x0), (y1 + y0)) - u) - v;
+	return u.MulExponententBase(2 * m) + w.MulExponententBase(m) + v;
+}
+
+LongNumber LongNumber::Divide(LongNumber & a, LongNumber & b)
+{
+	LongNumber tmp = b.MulExponententBase(1);
+	if (a >= tmp)
+	{
+		return Divide(a- tmp, LongNumber(BASE)) + BASE;
+	}
+	unsigned long long q = (BASE * a.number[MAX_SIZE - a.size] + a.number[MAX_SIZE - a.size + 1]) / b.number[MAX_SIZE - b.size];
+	if (q > MAX_VALUE)
+		q = MAX_VALUE;
+	LongNumber t = b * q;
+	if (t > a)
+	{
+		q = q - 1;
+		t = t - b;
+		if (t > a)
+		{
+			q = q - 1;
+			t = t - b;
+		}
+	}
+	return q;
+}
+
+LongNumber LongNumber::Mod(LongNumber & a, LongNumber & b)
+{
+	LongNumber tmp = b.MulExponententBase(1);
+	if (a >= tmp)
+	{
+		return Divide(a - tmp, LongNumber(BASE));
+	}
+	unsigned long long q = (BASE * a.number[MAX_SIZE - a.size] + a.number[MAX_SIZE - a.size + 1]) / b.number[MAX_SIZE - b.size];
+	if (q > MAX_VALUE)
+		q = MAX_VALUE;
+	LongNumber t = b * q;
+	if (t > a)
+	{
+		q = q - 1;
+		t = t - b;
+		if (t > a)
+		{
+			q = q - 1;
+			t = t - b;
+		}
+	}
+	return a - t;
 }
 
 bool LongNumber::IsPrime(int iterations)
 {
-	//TODO: Try to enhance IsPrime.
-	if (number == "2" || number == "3")
+	if ((size == 1 && number[LSD] == 2) || (size == 1 && number[LSD] == 3))
 		return true;
-	if (number == "0" || number == "1" || IsEven()) 
+	if ((size == 1 && number[LSD] == 0) || (size == 1 && number[LSD] == 1) || IsEven())
 		return false;
 	LongNumber n = *this;
 	LongNumber q = n - 1;
 	int k = 0;
-	while(q.IsEven())
+	while (q.IsEven())
 	{
 		q = q / 2;
 		k++;
@@ -846,51 +1115,48 @@ bool LongNumber::IsPrime(int iterations)
 
 bool LongNumber::IsEven()
 {
-	return number.back() == '0'
-		|| number.back() == '2'
-		|| number.back() == '4'
-		|| number.back() == '6'
-		|| number.back() == '8';
+	return number[LSD] % 2 == 0;
 }
 
 bool LongNumber::IsOdd()
 {
-	return number.back() == '1'
-		|| number.back() == '3'
-		|| number.back() == '5'
-		|| number.back() == '7'
-		|| number.back() == '9';
+	return !IsEven();
 }
 
-string LongNumber::getStringNumber()
+string LongNumber::GetStringNumber()
 {
-	if (number == "0")
-		return "0";
-	return sign ? number : "-"+number;
+	string num_str = "";
+	if (!sign)
+		num_str += "-";
+	string tmp;
+	for (int i = MAX_SIZE - size;i < MAX_SIZE;i++)
+	{
+		tmp = to_string(number[i]);
+		if (i != MAX_SIZE - size && tmp.length() < DIGITS_PER_ELEMENT)
+			tmp.insert(0, DIGITS_PER_ELEMENT - tmp.length(), '0');
+		num_str += tmp;
+	}
+	return num_str;
 }
 
-void LongNumber::RemoveLeadingZeros()
+int LongNumber::GetNumberOfDigits()
 {
-	if (number == "0")
-		return;
-	number.erase(0, number.find_first_not_of('0'));
-	if (number.length() == 0)
-		number = "0";
+	return 	(size - 1) * 9 + (int)to_string(number[MAX_SIZE - size]).length();
 }
 
-bool LongNumber::MillerRabinTest(LongNumber& n,LongNumber& q, int k)
+bool LongNumber::MillerRabinTest(LongNumber& n, LongNumber& q, int k)
 {
 	random_device rseed;
 	mt19937 rgen(rseed());
-	int max = atoi(number.c_str()) - 2;
+	int max = atoi(GetStringNumber().c_str()) - 2;
 	uniform_int_distribution<int> dist(2, max);
 	LongNumber a = dist(rgen);
 	LongNumber x = a.ModularExponentiation(q, n);
 	if (x == 1 || x == (n - 1))
 		return true;
-	for (int i = 1; i < k;i++)
+	for (int i = 1; i < k; i++)
 	{
-		LongNumber p2i = (int) pow(2, i);
+		LongNumber p2i = (int)pow(2, i);
 		LongNumber x = a.ModularExponentiation(p2i * q, n);
 		if (x == (n - 1))
 			return true;
