@@ -1,6 +1,13 @@
-﻿#include <iostream>
+﻿/*
+Ain Shams University
+Faculty of Engineering
+RSA Project for CSE432 Computer Security Fall 2016
+Name: Mohamed Khaled Gamil Ismail
+ID: 1201154
+*/
+
+#include <iostream>
 #include <string>
-#include <random>
 #include <cmath>
 #include <ctime>
 
@@ -49,7 +56,6 @@ private:
 	void Insert(unsigned long long n);
 	void Append(unsigned long long n, int count);
 	bool MillerRabinTest(LongNumber& n, LongNumber& q, int k);
-	LongNumber static Karatsuba(LongNumber& a, LongNumber& b);
 	LongNumber static REDC(LongNumber & N, LongNumber& N_inv, LongNumber& T);
 };
 
@@ -97,16 +103,18 @@ void test_multiplication_time(int n)
 
 void test_division_time(int n)
 {
-	LongNumber x("12369571528747655798110188786567180759626910465726920556567298659370399748072366507234899432827475865189642714067836207300153035059472237275816384410077871");
-	LongNumber y("2065420353441994803054315079370635087865508423962173447811880044936318158815802774220405304957787464676771309034463560633713497474362222775683960029689473");
+	//LongNumber x("613146241500251217781901182511578808656343996048865281195067222865875354435414754879740860169824341435779835004773419788215233286755223570756287073597240575020868820262738469079836284381887865043849058594244529999914407749623070473656002187994440630465017165980166916860301334175145980082772439857221824948844421903362650679826662219735503474838915729563886599030273053547440858613719791522407802156967772707196919240610998753813018909978568881709034791373718526666771136015908120183409001795657352");
+	LongNumber x("4397678428390379126255360246165021910057442267382175543246817108158797115317154540746718616555865161372450860559307149988169566508274711121236049281217144195628407516579953387138808449458611836421032431582081899650685651973204503916459595600207918950383877057152533041873901965623112895996177941667469292738");
+	LongNumber y("25548364798832019218170326077010425733930233389897468141147917831084690989884562791601588954296621731652139141347541240725432606132471100644835778517336041031200174441223836394229943651678525471050219216183727749114047330431603023948126844573697946795476319956787513765533596926704755530772983549787878951983");
+	LongNumber z;
 	clock_t begin = clock();
 	for (int i = 0; i < n; i++)
 	{
-		LongNumber z = x / y;
+		z = (x * x) / y;
 	}
 	clock_t end = clock();
 	cout << "Division Time = " << double(end - begin) / CLOCKS_PER_SEC << endl;
-	cout << "RESULT = " << (x / y).GetStringNumber() << endl << endl;
+	cout << "RESULT = " << z.GetStringNumber() << endl << endl;
 }
 
 void test_mod_time(int n)
@@ -168,14 +176,14 @@ string Encrypt(const string& message, const LongNumber& number, const LongNumber
 
 int main()
 {
-	/*// TEST START
-	int test_itr = 10000;
-	//test_addition_time(test_itr);
-	//test_subtraction_time(test_itr);
-	//test_multiplication_time(test_itr);
-	//test_division_time(test_itr);
-	//test_mod_time(test_itr);
-	//test_division_time2(test_itr);
+	// TEST START
+	int test_itr = 1000;
+	test_addition_time(test_itr);
+	test_subtraction_time(test_itr);
+	test_multiplication_time(test_itr);
+	test_division_time(test_itr);
+	test_mod_time(test_itr);
+	test_division_time2(test_itr);
 	string m_str = "88";
 	string c_str = "4397678428390379126255360246165021910057442267382175543246817108158797115317154540746718616555865161372450860559307149988169566508274711121236049281217144195628407516579953387138808449458611836421032431582081899650685651973204503916459595600207918950383877057152533041873901965623112895996177941667469292738";
 	string e_str = "65537";
@@ -183,21 +191,21 @@ int main()
 	string n_str = "25548364798832019218170326077010425733930233389897468141147917831084690989884562791601588954296621731652139141347541240725432606132471100644835778517336041031200174441223836394229943651678525471050219216183727749114047330431603023948126844573697946795476319956787513765533596926704755530772983549787878951983";
 	string p_str = "12369571528747655798110188786567180759626910465726920556567298659370399748072366507234899432827475865189642714067836207300153035059472237275816384410077871";
 	string q_str = "2065420353441994803054315079370635087865508423962173447811880044936318158815802774220405304957787464676771309034463560633713497474362222775683960029689473";
-	//test_modular_exponentiation_time(m_str, e_str, n_str);
-	//test_modular_exponentiation_time(c_str, d_str, n_str);
-	test_prime_check_time(p_str, 1);
-	//test_prime_check_time(q_str, 1);
-	// TEST END*/
+	test_modular_exponentiation_time(m_str, e_str, n_str);
+	test_modular_exponentiation_time(c_str, d_str, n_str);
+	test_prime_check_time(p_str, 3);
+	test_prime_check_time(q_str, 3);
+	// TEST END
 	string P_str, Q_str, E_str;
 	P_str = "P=12369571528747655798110188786567180759626910465726920556567298659370399748072366507234899432827475865189642714067836207300153035059472237275816384410077871";
 	Q_str = "Q=2065420353441994803054315079370635087865508423962173447811880044936318158815802774220405304957787464676771309034463560633713497474362222775683960029689473";
 	E_str = "E=65537";
-	P_str = "P=17";
-	Q_str = "Q=11";
-	E_str = "E=7";
-	getline(cin,P_str);
-	getline(cin,Q_str);
-	getline(cin,E_str);
+	//P_str = "P=17";
+	//Q_str = "Q=11";
+	//E_str = "E=7";
+	//getline(cin,P_str);
+	//getline(cin,Q_str);
+	//getline(cin,E_str);
 	P_str = P_str.substr(2);
 	Q_str = Q_str.substr(2);
 	E_str = E_str.substr(2);
@@ -213,12 +221,12 @@ int main()
 		if (operation == "Quit") break;
 		if (operation == "IsPPrime")
 		{
-			string response = (P.IsPrime(1)) ? "Yes" : "No";
+			string response = (P.IsPrime(3)) ? "Yes" : "No";
 			cout << response << endl;
 		}
 		else if (operation == "IsQPrime")
 		{
-			string response = (Q.IsPrime(1)) ? "Yes" : "No";
+			string response = (Q.IsPrime(3)) ? "Yes" : "No";
 			cout << response << endl;
 		}
 		else if (operation == "PrintN")
@@ -252,7 +260,7 @@ int main()
 string Encrypt(const string& message, const LongNumber& number, const LongNumber& mod)
 {
 	LongNumber msg(message);
-	msg = msg.ModularExponentiation(number, mod); //encryption
+	msg = msg.ModularExponentiation(number, mod); //encryption or decryption
 	return msg.GetStringNumber();
 }
 
@@ -271,7 +279,7 @@ LongNumber::LongNumber(long long n)
 		size = 1;
 		number[LSD] = abs(n);
 	}
-	else if(n <= 999999999999999999)
+	else if (n <= 999999999999999999)
 	{
 		size = 2;
 		number[LSD - 1] = abs(n) / BASE;
@@ -304,7 +312,7 @@ LongNumber::LongNumber(string n_str)
 		{
 			number[MAX_SIZE - size] = stoull(n_str.substr(0, n_str.length() % DIGITS_PER_ELEMENT));
 		}
-		int start = (int) n_str.length() - DIGITS_PER_ELEMENT;
+		int start = (int)n_str.length() - DIGITS_PER_ELEMENT;
 		for (int i = LSD; i >= MAX_SIZE - size; i--)
 		{
 			if (start < 0)
@@ -321,7 +329,7 @@ void LongNumber::Insert(unsigned long long n)
 	number[MAX_SIZE - size] = n;
 }
 
-void LongNumber::Append(unsigned long long n,int count)
+void LongNumber::Append(unsigned long long n, int count)
 {
 	if (count <= 0)
 		return;
@@ -329,11 +337,11 @@ void LongNumber::Append(unsigned long long n,int count)
 	if (size > MAX_SIZE)
 		size = MAX_SIZE;
 	int i = MAX_SIZE - size;
-	for (;i < MAX_SIZE - count;i++)
+	for (; i < MAX_SIZE - count; i++)
 	{
 		number[i] = number[i + count];
 	}
-	for (;i < MAX_SIZE; i++)
+	for (; i < MAX_SIZE; i++)
 	{
 		number[i] = n;
 	}
@@ -358,7 +366,7 @@ LongNumber LongNumber::operator*(const LongNumber & b)
 	{
 		mul = number[LSD] * b.number[LSD];
 	}
-	else if (true)//size < 9 || b.size < 9)
+	else
 	{
 		if (size < b.size)
 		{
@@ -411,19 +419,12 @@ LongNumber LongNumber::operator*(const LongNumber & b)
 			}
 		}
 	}
-	else
-	{
-		LongNumber op1 = *this;
-		LongNumber op2 = b;
-		mul = Karatsuba(op1, op2);
-	}
 	mul.sign = !(sign ^ b.sign);
 	return mul;
 }
 
 LongNumber LongNumber::operator/(const LongNumber & b)
 {
-	// TODO: Try to enhance division.
 	if ((size == 1 && number[LSD] == 0) || (*this < b))
 		return LongNumber();
 	if ((b.size == 1 && b.number[LSD] == 1))
@@ -551,7 +552,6 @@ LongNumber LongNumber::operator/(const LongNumber & b)
 
 LongNumber LongNumber::operator%(const LongNumber & b)
 {
-	// not tested with negative numbers as it is not needed in RSA
 	if ((size == 1 && number[LSD] == 0) || *this == b)
 		return LongNumber();
 	if ((b.size == 1 && b.number[LSD] == 1))
@@ -635,7 +635,7 @@ bool LongNumber::operator==(const LongNumber& b)
 {
 	if (size != b.size)
 		return false;
-	for(int i = MAX_SIZE - size;i < MAX_SIZE;i++)
+	for (int i = MAX_SIZE - size; i < MAX_SIZE; i++)
 	{
 		if (number[i] != b.number[i])
 			return false;
@@ -831,12 +831,12 @@ LongNumber LongNumber::operator-(const LongNumber & b)
 	int op2Index = MAX_SIZE;
 	while (op2Index > MAX_SIZE - b.size)
 	{
-		if(op1.number[--op1Index] < b.number[--op2Index])
+		if (op1.number[--op1Index] < b.number[--op2Index])
 		{
 			sub.number[op1Index] = BASE + op1.number[op1Index] - b.number[op2Index];
 			if (op1Index != MAX_SIZE - op1.size)
 			{
-				if(op1.number[op1Index - 1] != 0)
+				if (op1.number[op1Index - 1] != 0)
 					op1.number[op1Index - 1]--;
 				else
 				{
@@ -850,7 +850,7 @@ LongNumber LongNumber::operator-(const LongNumber & b)
 					op1.number[op1Index - i]--;
 				}
 			}
-				
+
 		}
 		else
 			sub.number[op1Index] = op1.number[op1Index] - b.number[op2Index];
@@ -860,7 +860,7 @@ LongNumber LongNumber::operator-(const LongNumber & b)
 		--op1Index;
 		sub.number[op1Index] = op1.number[op1Index];
 	}
-	for(int i = MAX_SIZE - size;i < MAX_SIZE;i++)
+	for (int i = MAX_SIZE - size; i < MAX_SIZE; i++)
 	{
 		if (sub.number[i] == 0)
 			sub.size--;
@@ -883,53 +883,25 @@ LongNumber LongNumber::ModularExponentiation(const LongNumber & power, const Lon
 	if ((p.size == 1 && p.number[LSD] == 0)) {
 		return LongNumber(1);
 	}
-	if (true)
+	LongNumber N(mod);
+	LongNumber R(LongNumber(1).MulExponententBase(N.size));
+	LongNumber N_inv(N.ModularInverse(R));
+	if (N_inv != 0)
+		N_inv = R - N_inv;
+	LongNumber result(R % N);
+	LongNumber base_mont((base * R) % N);
+	while (p > 0)
 	{
-		// TODO: Need debuging.
-		LongNumber N(mod);
-		LongNumber R(LongNumber(1).MulExponententBase(N.size));
-		LongNumber N_inv(N.ModularInverse(R));
-		if(N_inv != 0)
-			N_inv = R - N_inv;
-		LongNumber result(R % N);
-		LongNumber base_mont((base * R) % N);
-		while (p > 0)
+		if (p.IsOdd())
 		{
-			if (p.IsOdd())
-				result = REDC(N, N_inv, result * base_mont);
-			p = p / 2;
-			base_mont = REDC(N, N_inv, base_mont * base_mont);
+			LongNumber T = result * base_mont;
+			result = REDC(N, N_inv, T);
 		}
-		return (result * R.ModularInverse(N)) % N;
+		p = p / 2;
+		LongNumber T = base_mont * base_mont;
+		base_mont = REDC(N, N_inv, T);
 	}
-	if (false)//p.size > 10)
-	{
-		LongNumber result(1);
-		while (p > 0)
-		{
-			if (p.IsOdd())
-				result = (result * base) % mod;
-			p = p / 2;
-			base = (base * base) % mod;
-		}
-		return result;
-	}
-	else
-	{
-		LongNumber m = base.ModularExponentiation(p / 2, mod);
-		LongNumber res;
-		if (p.IsEven())
-		{
-			res = LongNumber(1);
-		}
-		else
-		{
-			res = base;
-		}
-		LongNumber x = (m * m) % mod;
-		return (x * res) % mod;
-	}
-	return 1;
+	return (result * R.ModularInverse(N)) % N;
 }
 
 LongNumber LongNumber::ModularInverse(const LongNumber & mod)
@@ -987,10 +959,10 @@ LongNumber LongNumber::DivExponententBase(int power)
 	{
 		if (i - power < 0)
 			break;
-		tmp.number[i] = number[i-power];
+		tmp.number[i] = number[i - power];
 	}
 	tmp.size -= power;
-	for (int i = MAX_SIZE - size; i < MAX_SIZE; i++)
+	for (int i = MAX_SIZE - tmp.size; i < MAX_SIZE; i++)
 	{
 		if (tmp.number[i] == 0)
 			tmp.size--;
@@ -1016,7 +988,7 @@ LongNumber LongNumber::MulExponentent10(int power)
 	int p1 = power / 9;
 	int p2 = power % 9;
 	LongNumber tmp = (*this).MulExponententBase(p1);
-	return tmp * (unsigned long long) pow(10,p2);
+	return tmp * (unsigned long long) pow(10, p2);
 }
 
 LongNumber LongNumber::DivExponentent10(int power)
@@ -1032,39 +1004,6 @@ LongNumber LongNumber::Absolute()
 	LongNumber tmp = *this;
 	tmp.sign = true;
 	return tmp;
-}
-
-LongNumber LongNumber::Karatsuba(LongNumber & a, LongNumber & b)
-{
-	if ((a.size == 1 && a.number[LSD] == 0) || (b.size == 1 && b.number[LSD] == 0))
-	{
-		return LongNumber();
-	}
-	if ((a.size == 1 && a.number[LSD] == 1))
-	{
-		return b;
-	}
-	if ((b.size == 1 && b.number[LSD] == 1))
-	{
-		return a;
-	}
-	int m = (a.size > b.size) ? (int) a.size : (int) b.size;
-	if (m == 1)
-	{
-		return a.number[LSD] * b.number[LSD];
-	}
-	m = (m / 2) + (m % 2);
-	LongNumber x1 = a.DivExponententBase(m);
-	LongNumber x0 = a.ModExponententBase(m);
-	LongNumber y1 = b.DivExponententBase(m);
-	LongNumber y0 = b.ModExponententBase(m);
-	//LongNumber u = Karatsuba(x1, y1);
-	//LongNumber v = Karatsuba(x0, y0);
-	//LongNumber w = (Karatsuba((x1 + x0), (y1 + y0)) - u) - v;
-	LongNumber u = x1 * y1;
-	LongNumber v = x0 * y0;
-	LongNumber w = ((x1 + x0) * (y1 + y0) - u) - v;
-	return u.MulExponententBase(2 * m) + w.MulExponententBase(m) + v;
 }
 
 LongNumber LongNumber::REDC(LongNumber & N, LongNumber & N_inv, LongNumber & T)
@@ -1116,7 +1055,7 @@ string LongNumber::GetStringNumber()
 	if (!sign)
 		num_str += "-";
 	string tmp;
-	for (int i = MAX_SIZE - size;i < MAX_SIZE;i++)
+	for (int i = MAX_SIZE - size; i < MAX_SIZE; i++)
 	{
 		tmp = to_string(number[i]);
 		if (i != MAX_SIZE - size && tmp.length() < DIGITS_PER_ELEMENT)
@@ -1133,18 +1072,16 @@ int LongNumber::GetNumberOfDigits()
 
 bool LongNumber::MillerRabinTest(LongNumber& n, LongNumber& q, int k)
 {
-	random_device rseed;
-	mt19937 rgen(rseed());
 	int max = atoi(GetStringNumber().c_str()) - 2;
-	uniform_int_distribution<int> dist(2, max);
-	LongNumber a = dist(rgen);
+	LongNumber a(1 + rand() % max);
 	LongNumber x = a.ModularExponentiation(q, n);
 	if (x == 1 || x == (n - 1))
 		return true;
 	for (int i = 1; i < k; i++)
 	{
 		LongNumber p2i = (int)pow(2, i);
-		LongNumber x = a.ModularExponentiation(p2i * q, n);
+		p2i = p2i * q;
+		LongNumber x = a.ModularExponentiation(p2i, n);
 		if (x == (n - 1))
 			return true;
 	}
